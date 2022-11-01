@@ -13,14 +13,13 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class Client {
-
-	public static void getMethod(String host, int port, String path)
+	private static final String CRLF = "\r\n";
+	
+	public static void getMethod(String host, int port, String fileName)
 			throws IOException {
-
 		// Opening Connection based on the port number 80(HTTP) and 443(HTTPS)
 		Socket clientSocket = null;
 		clientSocket = new Socket(host, port);
-
 		System.out.println("======================================");
 		System.out.println("Connected");
 		System.out.println("======================================");
@@ -33,12 +32,22 @@ public class Client {
 
 		// Sending request to the server
 		// Building HTTP request header
-		request.print("GET /" + path + "/ HTTP/1.1\r\n"); // "+path+"
-		request.print("Host: " + host + "\r\n");
-		request.print("Connection: close\r\n");
-		request.print("Mozilla/4.0 (compatible; MSIE5.01; Windows NT)\r\n");
-		request.print("\r\n");
+		//request.print("" + CRLF);
+		request.print("GET /" + fileName + " HTTP/1.1" + CRLF); //GET /home.html HTTP/1.1
+		request.print("Host: " + host + CRLF);//		Host: developer.mozilla.org
+		request.print("User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:50.0) Gecko/20100101 Firefox/50.0" + CRLF);//		User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:50.0) Gecko/20100101 Firefox/50.0
+		request.print("Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" + CRLF);//		Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+		request.print("Accept-Language: en-US,en;q=0.5" + CRLF);//		Accept-Language: en-US,en;q=0.5
+		request.print("Accept-Encoding: gzip, deflate, br" + CRLF);//		Accept-Encoding: gzip, deflate, br
+		request.print("Referer: https://developer.mozilla.org/testpage.html" + CRLF);//		Referer: https://developer.mozilla.org/testpage.html
+		request.print("Connection: keep-alive" + CRLF);//		Connection: keep-alive
+		request.print("Upgrade-Insecure-Requests: 1" + CRLF);//		Upgrade-Insecure-Requests: 1
+//		If-Modified-Since: Mon, 18 Jul 2016 02:36:04 GMT
+//		If-None-Match: "c561c68d0ba92bbeb8b0fff2a9199f722e3a621a"
+//		Cache-Control: max-age=0
+		request.print(CRLF);
 		request.flush();
+		
 		System.out.println("Request Sent!");
 		System.out.println("======================================");
 
@@ -53,8 +62,164 @@ public class Client {
 
 		response.close();
 		request.close();
+		
 		clientSocket.close();
 	}
+	
+	
+	public static void headMethod(String host, int port, String fileName)
+			throws IOException {
+		// Opening Connection based on the port number 80(HTTP) and 443(HTTPS)
+		Socket clientSocket = null;
+		clientSocket = new Socket(host, port);
+		System.out.println("======================================");
+		System.out.println("Connected");
+		System.out.println("======================================");
+
+		// Declare a writer to this url
+		PrintWriter request = new PrintWriter(clientSocket.getOutputStream(), true);
+
+		// Declare a listener to this url
+		BufferedReader response = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+
+		// Sending request to the server
+		// Building HTTP request header
+		//request.print("" + CRLF);
+		request.print("HEAD /" + fileName + " HTTP/1.1" + CRLF); //GET /home.html HTTP/1.1
+		request.print("Host: " + host + CRLF);//		Host: developer.mozilla.org
+		request.print("User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:50.0) Gecko/20100101 Firefox/50.0" + CRLF);//		User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:50.0) Gecko/20100101 Firefox/50.0
+		request.print("Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" + CRLF);//		Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+		request.print("Accept-Language: en-US,en;q=0.5" + CRLF);//		Accept-Language: en-US,en;q=0.5
+		request.print("Accept-Encoding: gzip, deflate, br" + CRLF);//		Accept-Encoding: gzip, deflate, br
+		request.print("Referer: https://developer.mozilla.org/testpage.html" + CRLF);//		Referer: https://developer.mozilla.org/testpage.html
+		request.print("Connection: keep-alive" + CRLF);//		Connection: keep-alive
+		request.print("Upgrade-Insecure-Requests: 1" + CRLF);//		Upgrade-Insecure-Requests: 1
+//		If-Modified-Since: Mon, 18 Jul 2016 02:36:04 GMT
+//		If-None-Match: "c561c68d0ba92bbeb8b0fff2a9199f722e3a621a"
+//		Cache-Control: max-age=0
+		request.print(CRLF);
+		request.flush();
+		
+		System.out.println("Request Sent!");
+		System.out.println("======================================");
+
+		// Receiving response from server
+		String responseLine;
+		while ((responseLine = response.readLine()) != null) {
+			System.out.println(responseLine);
+		}
+		System.out.println("======================================");
+		System.out.println("Response Recieved!!");
+		System.out.println("======================================");
+
+		response.close();
+		request.close();
+		
+		clientSocket.close();
+	}	
+	
+	
+	public static void deleteMethod(String host, int port, String fileName)
+			throws IOException {
+		// Opening Connection based on the port number 80(HTTP) and 443(HTTPS)
+		Socket clientSocket = null;
+		clientSocket = new Socket(host, port);
+		System.out.println("======================================");
+		System.out.println("Connected");
+		System.out.println("======================================");
+
+		// Declare a writer to this url
+		PrintWriter request = new PrintWriter(clientSocket.getOutputStream(), true);
+
+		// Declare a listener to this url
+		BufferedReader response = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+
+		// Sending request to the server
+		// Building HTTP request header
+		//request.print("" + CRLF);
+		request.print("DELETE /" + fileName + " HTTP/1.1" + CRLF); //GET /home.html HTTP/1.1
+		request.print("Host: " + host + CRLF);//		Host: developer.mozilla.org
+		request.print("User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:50.0) Gecko/20100101 Firefox/50.0" + CRLF);//		User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:50.0) Gecko/20100101 Firefox/50.0
+		request.print("Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" + CRLF);//		Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+		request.print("Accept-Language: en-US,en;q=0.5" + CRLF);//		Accept-Language: en-US,en;q=0.5
+		request.print("Accept-Encoding: gzip, deflate, br" + CRLF);//		Accept-Encoding: gzip, deflate, br
+		request.print("Referer: https://developer.mozilla.org/testpage.html" + CRLF);//		Referer: https://developer.mozilla.org/testpage.html
+		request.print("Connection: keep-alive" + CRLF);//		Connection: keep-alive
+		request.print("Upgrade-Insecure-Requests: 1" + CRLF);//		Upgrade-Insecure-Requests: 1
+//		If-Modified-Since: Mon, 18 Jul 2016 02:36:04 GMT
+//		If-None-Match: "c561c68d0ba92bbeb8b0fff2a9199f722e3a621a"
+//		Cache-Control: max-age=0
+		request.print(CRLF);
+		request.flush();
+		
+		System.out.println("Request Sent!");
+		System.out.println("======================================");
+
+		// Receiving response from server
+		String responseLine;
+		while ((responseLine = response.readLine()) != null) {
+			System.out.println(responseLine);
+		}
+		System.out.println("======================================");
+		System.out.println("Response Recieved!!");
+		System.out.println("======================================");
+
+		response.close();
+		request.close();
+		
+		clientSocket.close();
+	}	
+	
+	public static void connectMethod(String host, int port)
+			throws IOException {
+		// Opening Connection based on the port number 80(HTTP) and 443(HTTPS)
+		Socket clientSocket = null;
+		clientSocket = new Socket(host, port);
+		System.out.println("======================================");
+		System.out.println("Connected");
+		System.out.println("======================================");
+
+		// Declare a writer to this url
+		PrintWriter request = new PrintWriter(clientSocket.getOutputStream(), true);
+
+		// Declare a listener to this url
+		BufferedReader response = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+
+		// Sending request to the server
+		// Building HTTP request header
+		//request.print("" + CRLF);
+		request.print("CONNECT " + host + ":" + port + " HTTP/1.1" + CRLF); //GET /home.html HTTP/1.1
+		request.print("Host: " + host + CRLF);//		Host: developer.mozilla.org
+		request.print("User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:50.0) Gecko/20100101 Firefox/50.0" + CRLF);//		User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:50.0) Gecko/20100101 Firefox/50.0
+		request.print("Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" + CRLF);//		Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+		request.print("Accept-Language: en-US,en;q=0.5" + CRLF);//		Accept-Language: en-US,en;q=0.5
+		request.print("Accept-Encoding: gzip, deflate, br" + CRLF);//		Accept-Encoding: gzip, deflate, br
+		request.print("Referer: https://developer.mozilla.org/testpage.html" + CRLF);//		Referer: https://developer.mozilla.org/testpage.html
+		request.print("Connection: keep-alive" + CRLF);//		Connection: keep-alive
+		request.print("Upgrade-Insecure-Requests: 1" + CRLF);//		Upgrade-Insecure-Requests: 1
+//		If-Modified-Since: Mon, 18 Jul 2016 02:36:04 GMT
+//		If-None-Match: "c561c68d0ba92bbeb8b0fff2a9199f722e3a621a"
+//		Cache-Control: max-age=0
+		request.print(CRLF);
+		request.flush();
+		
+		System.out.println("Request Sent!");
+		System.out.println("======================================");
+
+		// Receiving response from server
+		String responseLine;
+		while ((responseLine = response.readLine()) != null) {
+			System.out.println(responseLine);
+		}
+		System.out.println("======================================");
+		System.out.println("Response Recieved!!");
+		System.out.println("======================================");
+
+		response.close();
+		request.close();
+		
+		clientSocket.close();
+	}	
 
 	public static void putMethod(String host, int port, String file)
 			throws UnknownHostException, IOException {
@@ -109,7 +274,7 @@ public class Client {
 		clientSocket.close();
 	}
 	
-	public static void postMethod(String host, int port, String path)
+	public static void postMethod(String host, int port, String folderName, String content)
 			throws IOException {
 
 		// Opening Connection based on the port number 80(HTTP) and 443(HTTPS)
@@ -130,12 +295,16 @@ public class Client {
 
 		// Sending request to the server
 		// Building HTTP request header
-		request.print("POST /" + path + "/ HTTP/1.1\r\n"); // "+path+"
-		request.print("Host: " + host + "\r\n");
-		request.print("Connection: close\r\n");
-		request.print("Mozilla/4.0 (compatible; MSIE5.01; Windows NT)\r\n");
-		request.print("\r\n");
+		System.out.println(content);
+		request.print("POST /" + folderName + "/ HTTP/1.1" + CRLF); // "+path+"
+		request.print("Host: " + host + CRLF);
+		request.print("Content-Type: application/json" + CRLF);
+		request.print("Content-Length: " + content.length() + CRLF);
+		request.print("Body: " + CRLF);
+		request.print(content + CRLF);
+		request.print(CRLF);
 		request.flush();
+		
 		System.out.println("Request Sent!");
 		System.out.println("======================================");
 
@@ -152,6 +321,53 @@ public class Client {
 		request.close();
 		clientSocket.close();
 	}
+	
+	public static void putMethod(String host, int port, String fileName, String content)
+			throws IOException {
+
+		// Opening Connection based on the port number 80(HTTP) and 443(HTTPS)
+		Socket clientSocket = null;
+		clientSocket = new Socket(host, port);
+
+		System.out.println("======================================");
+		System.out.println("Connected");
+		System.out.println("======================================");
+
+		// Declare a writer to this url
+		PrintWriter request = new PrintWriter(clientSocket.getOutputStream(),
+				true);
+
+		// Declare a listener to this url
+		BufferedReader response = new BufferedReader(new InputStreamReader(
+				clientSocket.getInputStream()));
+
+		// Sending request to the server
+		// Building HTTP request header
+		request.print("PUT /" + fileName + "/ HTTP/1.1" + CRLF); // "+path+"
+		request.print("Host: " + host + CRLF);
+		request.print("Content-Type: application/json" + CRLF);
+		request.print("Content-Length: " + content.length() + CRLF);
+		request.print("Body: " + CRLF);
+		request.print(content + CRLF);
+		request.print(CRLF);
+		request.flush();
+		
+		System.out.println("Request Sent!");
+		System.out.println("======================================");
+
+		// Receiving response from server
+		String responseLine;
+		while ((responseLine = response.readLine()) != null) {
+			System.out.println(responseLine);
+		}
+		System.out.println("======================================");
+		System.out.println("Response Recieved!!");
+		System.out.println("======================================");
+
+		response.close();
+		request.close();
+		clientSocket.close();
+	}	
 
 	private static String readHtmlFile(String file) {
 		

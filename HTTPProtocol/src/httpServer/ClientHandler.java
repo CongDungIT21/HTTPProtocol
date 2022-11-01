@@ -1,5 +1,6 @@
 package httpServer;
 
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -8,7 +9,12 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.net.Socket;
+import java.nio.file.DirectoryNotEmptyException;
+import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -34,9 +40,8 @@ public class ClientHandler implements Runnable {
 	}
 
 	private void readResponse() throws IOException, InterruptedException {
-
+		System.out.println("a: ReadReponse() Run");
 		try {
-
 			BufferedReader request = new BufferedReader(new InputStreamReader(
 					client.getInputStream()));
 			BufferedWriter response = new BufferedWriter(
@@ -46,74 +51,143 @@ public class ClientHandler implements Runnable {
 	            
 			String putDataFromClient = "";
 			String requestHeader = "";
+			String requestBody = "";
 			String temp = ".";
 			while (!temp.equals("")) {
 				temp = request.readLine();
-				System.out.println(temp);
+				if(temp.contains("Body:")) {
+					while (!temp.equals("")) {
+						temp = request.readLine();
+						requestBody += temp + "\n";
+					}
+					break;
+				}
 				requestHeader += temp + "\n";
 			}
-
+//			System.out.println("requestHeader: " + requestHeader);
+//			System.out.println("requestBody: " + requestBody);
+			
 			// Get the method from HTTP header
 			StringBuilder sb = new StringBuilder();
-			String file = requestHeader.split("\n")[0].split(" ")[1].split("/")[1];
-			if (requestHeader.split("\n")[0].contains("GET") && checkURL(file)) {
-
+			String fileName = requestHeader.split("\n")[0].split(" ")[1].split("/")[1];
+			String method = requestHeader.split("\n")[0];
+			String pathLocationInServerSaveData = "C:\\Users\\admind\\Documents\\GitHub\\HTTPProtocol\\HTTPProtocol\\Data\\HTML\\";
+			
+			System.out.println("file 01: " + fileName);
+			if (method.contains("GET")) {
+				System.out.println("method.contains(\"GET\")");
+				System.out.println("checkURL()" + pathLocationInServerSaveData + fileName);
+				if((new File(pathLocationInServerSaveData + fileName)).exists()) {
 				// Get the correct page
 				constructResponseHeader(200, sb);
+				System.out.println("sb.toString() " + sb.toString());
 				response.write(sb.toString());
-				response.write(getData(file));
+				response.write(getData(pathLocationInServerSaveData + fileName));
 				sb.setLength(0);
 				response.flush();
 				System.out.println("======================================");
-
-			} 
-			
-			else if (requestHeader.split("\n")[0].contains("PUT")
-					&& checkURL(file)) {
-
-				// Get the data from the inputStream
-				temp = ".";
-				temp = request.readLine();
-				while (temp.contains("<html>")||temp.contains("<!doctype html>")||temp.contains("<!DOCTYPE html>")) {
-					while (!temp.equals("</html>")) {
-						temp = request.readLine();
-						System.out.println(temp);
-						putDataFromClient += temp + "\n";
-					}
-					putDataFromClient += "</html>";
 				}
-
-				// PUT the data to file serverIndex.html
-				if (putDataFromClient != "") {
-					int responseCode = putData(putDataFromClient, file);
-					constructResponseHeader(responseCode, sb);
-					response.write(sb.toString());
-					sb.setLength(0);
-					response.flush();
-				} else {
-					constructResponseHeader(304, sb);
+				else {
+					System.out.println("Note Found");
+					constructResponseHeader(404, sb);
 					response.write(sb.toString());
 					sb.setLength(0);
 					response.flush();
 				}
-
-				System.out.println("======================================");
-
 			} 
-			else if (requestHeader.split("\n")[0].contains("POST")
-					&& checkURL(file)) 
-			{
-				constructResponseHeader(200, sb);
+			else if (method.contains("HEAD")) {
+				System.out.println("method.contains(\"HEAD\")");
+				System.out.println("checkURL()" + pathLocationInServerSaveData + fileName);
+				if((new File(pathLocationInServerSaveData + fileName)).exists()) {
+					// Get the correct page
+					constructResponseHeader(200, sb);
+					
+					System.out.println("sb.toString() " + sb.toString());
+				}
+				else {
+					System.out.println("Note Found");
+					constructResponseHeader(404, sb);
+				}	
 				response.write(sb.toString());
-				response.write(getData(file));
 				sb.setLength(0);
 				response.flush();
+				System.out.println("======================================");
 			}
-			
-			
+			else if (method.contains("DELETE")) {
+				System.out.println("method.contains(\"DELETE\")");
+				System.out.println("checkURL()" + pathLocationInServerSaveData + fileName);
+				if((new File(pathLocationInServerSaveData + fileName)).exists()) {
+				// Get the correct page
+					constructResponseHeader(200, sb);
+					System.out.println("sb.toString() " + sb.toString());
+					System.out.println(deleteFile(pathLocationInServerSaveData + fileName));
+					deleteFile(pathLocationInServerSaveData + fileName);		
+				}
+				else {
+					System.out.println("Note Found");
+					constructResponseHeader(404, sb);
+				}	
+				response.write(sb.toString());
+				sb.setLength(0);
+				response.flush();
+				System.out.println("======================================");
+			}
+			else if (method.contains("POST")) {
+				System.out.println("method.contains(\"POST\")");
+				String folderName = requestHeader.split("\n")[0].split(" ")[1];
+				if((new File("C:\\Users\\admind\\Documents\\GitHub\\HTTPProtocol\\HTTPProtocol\\Data\\" + folderName)).exists()) {
+				// Get the correct page
+					constructResponseHeader(200, sb);
+					System.out.println("sb.toString() " + sb.toString());
+//					System.out.println("Content \n" + requestBody);
+					String pathFileSave = "C:\\Users\\admind\\Documents\\GitHub\\HTTPProtocol\\HTTPProtocol\\Data\\" + folderName + "\\testPost.txt";
+					try {
+					    BufferedWriter writerData = new BufferedWriter(new FileWriter(pathFileSave));
+					    writerData.write(requestBody);
+					    writerData.close();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+				else {
+					System.out.println("Note Found");
+					constructResponseHeader(404, sb);
+				}	
+				response.write(sb.toString());
+				sb.setLength(0);
+				response.flush();
+				System.out.println("======================================");
+			}
+			else if (method.contains("PUT")) {
+				System.out.println("method.contains(\"PUT\")");
+				String fileNamePut = requestHeader.split("\n")[0].split(" ")[1];
+				System.out.println("fileNamePut: " + fileNamePut);
+				if((new File("C:\\Users\\admind\\Documents\\GitHub\\HTTPProtocol\\HTTPProtocol\\Data\\" + fileNamePut)).exists()) {
+				// Get the correct page
+					constructResponseHeader(200, sb);
+					System.out.println("sb.toString() " + sb.toString());
+//					System.out.println("Content \n" + requestBody);
+					String pathFileSave = "C:\\Users\\admind\\Documents\\GitHub\\HTTPProtocol\\HTTPProtocol\\Data\\" + fileNamePut;
+					try {
+					    BufferedWriter writerData = new BufferedWriter(new FileWriter(pathFileSave));
+					    writerData.write(requestBody);
+					    writerData.close();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+				else {
+					System.out.println("Note Found");
+					constructResponseHeader(404, sb);
+				}	
+				response.write(sb.toString());
+				sb.setLength(0);
+				response.flush();
+				System.out.println("======================================");
+			}		
 			else {
-				// Enter the error code
-				// 404 page not found
 				constructResponseHeader(404, sb);
 				response.write(sb.toString());
 				sb.setLength(0);
@@ -134,9 +208,6 @@ public class ClientHandler implements Runnable {
 	private static boolean checkURL(String file) {
 
 		File myFile = new File(file);
-//		System.out.println(file);
-//		System.out.println("IT IS CHEKCING");
-//		System.out.println(myFile.exists() && !myFile.isDirectory());
 		return myFile.exists() && !myFile.isDirectory();
 
 	}
@@ -145,19 +216,25 @@ public class ClientHandler implements Runnable {
 	private static void constructResponseHeader(int responseCode,
 			StringBuilder sb) {
 
-		if (responseCode == 200) {
-
-			sb.append("HTTP/1.1 200 OK\r\n");
-			sb.append("Date:" + getTimeStamp() + "\r\n");
-			sb.append("Server:localhost\r\n");
-			sb.append("Content-Type: text/html\r\n");
-			sb.append("Connection: Closed\r\n\r\n");
-
+		String CRLF = "\r\n";
+		if (responseCode == 200) {	
+			sb.append("200 OK" + CRLF);
+			sb.append("Access-Control-Allow-Origin: *" + CRLF);
+			sb.append("Connection: Keep-Alive" + CRLF);
+			sb.append("Content-Encoding: gzip" + CRLF);
+			sb.append("Content-Type: text/html; charset=utf-8" + CRLF);
+			sb.append("Date:" + getTimeStamp() + CRLF);
+			sb.append("Etag: \"c561c68d0ba92bbeb8b0f612a9199f722e3a621a\"" + CRLF);
+			sb.append("Keep-Alive: timeout=5, max=997" + CRLF);
+			sb.append("Last-Modified: Mon, 18 Jul 2016 02:36:04 GMT" + CRLF);
+			sb.append("Server: localhost" + CRLF);
+			sb.append("Set-Cookie: mykey=myvalue; expires=Mon, 17-Jul-2017 16:06:00 GMT; Max-Age=31449600; Path=/; secure" + CRLF);
+			sb.append(CRLF);
 		} else if (responseCode == 404) {
-
-			sb.append("HTTP/1.1 404 Not Found\r\n");
-			sb.append("Date:" + getTimeStamp() + "\r\n");
-			sb.append("Server:localhost\r\n");
+			System.out.println("responseCode == 404");
+			sb.append("HTTP/1.1 404 Not Found" + CRLF);
+			sb.append("Date:" + getTimeStamp() + CRLF);
+			sb.append("Server:localhost" + CRLF);
 			sb.append("\r\n");
 		} else if (responseCode == 304) {
 			sb.append("HTTP/1.1 304 Not Modified\r\n");
@@ -186,7 +263,7 @@ public class ClientHandler implements Runnable {
 			reader = new BufferedReader(new FileReader(myFile));
 			String line = null;
 			while (!(line = reader.readLine()).contains("</html>")) {
-				responseToClient += line;
+				responseToClient += line + "\n";
 			}
 			responseToClient += line;
 			// System.out.println(responseToClient);
@@ -220,5 +297,22 @@ public class ClientHandler implements Runnable {
 		String formattedDate = sdf.format(date);
 		return formattedDate;
 	}
-
+	
+	
+	private static String deleteFile(String filePath) {
+        try {
+            Files.deleteIfExists(Paths.get(filePath));
+        }
+        catch (NoSuchFileException e) {
+        	return "No such file/directory exists";
+        }
+        catch (DirectoryNotEmptyException e) {
+        	return "Directory is not empty.";
+        }
+        catch (IOException e) {
+            return "Invalid permissions.";
+        }
+ 
+        return "Deletion successful.";
+	}
 }

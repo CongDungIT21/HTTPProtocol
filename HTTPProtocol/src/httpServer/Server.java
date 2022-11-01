@@ -10,7 +10,6 @@ class Server {
 	
 	public static void main(String[] args) throws InterruptedException {
 		//int portNumber = Integer.parseInt(args[0]);
-
 		int portNumber = 80;
 		try {
 			// initializing the Socket Server

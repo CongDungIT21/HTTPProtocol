@@ -1,0 +1,4 @@
+Các dữ liệu của body khi nhận về được lưu ở đâu ??
+Tạm thời tạo fodler để lưu tạm
+
+Chia 2 hàm 1 hàm reponse header 1 hàm response body Tương ứng client có nhận head và nhận body
